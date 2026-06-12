@@ -31,6 +31,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: var(--font);
       color: var(--text);
@@ -38,6 +40,9 @@
       line-height: 1.55;
       -webkit-font-smoothing: antialiased;
     }
+
+    /* offset anchored sections so the sticky header doesn't cover them */
+    section[id], footer[id] { scroll-margin-top: 86px; }
 
     .container {
       max-width: var(--maxw);
@@ -96,10 +101,39 @@
     .brand-text .tag { font-size: 0.7rem; color: var(--muted); }
 
     .nav-links { display: flex; gap: 30px; }
-    .nav-links a { color: var(--navy); font-weight: 600; font-size: 0.95rem; }
+    .nav-links a {
+      color: var(--navy); font-weight: 600; font-size: 0.95rem;
+      position: relative; padding-bottom: 2px;
+    }
     .nav-links a:hover { color: var(--orange); }
+    .nav-links a.active { color: var(--orange); }
+    .nav-links a.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
+      height: 2px; background: var(--orange); border-radius: 2px;
+    }
 
-    .nav-toggle { display: none; background: none; border: none; font-size: 1.6rem; cursor: pointer; }
+    .nav-toggle {
+      display: none; background: none; border: none;
+      font-size: 1.6rem; cursor: pointer; color: var(--navy); line-height: 1;
+    }
+
+    /* Mobile slide-down menu */
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      padding: 14px 24px;
+      font-weight: 600;
+      color: var(--navy);
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-menu a:hover { background: var(--tint-blue); color: var(--orange); }
+    .mobile-menu .btn { margin: 14px 24px; }
 
     /* ============================================================
        Hero
@@ -277,20 +311,39 @@
     .demo-play {
       width: 50px; height: 50px; border-radius: 50%; background: var(--navy); color: #fff;
       display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+      cursor: pointer; border: none; transition: transform 0.15s ease, background 0.2s ease;
     }
-    .demo-body { flex: 1; }
+    .demo-play:hover { transform: scale(1.06); background: var(--blue); }
+    .demo-body { flex: 1; min-width: 0; }
     .demo-body .d-title { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
     .demo-body .d-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
+
+    /* Clickable progress track over a waveform backdrop */
     .waveform {
+      position: relative;
       height: 34px;
-      background: repeating-linear-gradient(90deg,
-        var(--blue) 0 2px, transparent 2px 5px);
-      opacity: 0.5;
       border-radius: 4px;
       margin-bottom: 8px;
+      cursor: pointer;
+      background: repeating-linear-gradient(90deg,
+        rgba(47,109,240,0.28) 0 2px, transparent 2px 5px);
+      overflow: hidden;
+    }
+    .waveform .progress {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+      background: repeating-linear-gradient(90deg,
+        var(--blue) 0 2px, transparent 2px 5px);
     }
     .demo-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); }
-    .demo-meta .rate { color: var(--blue); font-weight: 700; }
+    .demo-meta .rate {
+      color: var(--blue); font-weight: 700; cursor: pointer;
+      background: none; border: none; font-family: inherit; font-size: 0.75rem;
+    }
+    .demo-meta .rate:hover { text-decoration: underline; }
+
+    /* Phone player play button */
+    .phone-player .play { cursor: pointer; transition: transform 0.15s ease; }
+    .phone-player .play:hover { transform: scale(1.08); }
 
     /* CTA banner */
     .cta-banner {
@@ -422,8 +475,18 @@
       </nav>
 
       <a class="btn btn-orange" href="#pricing">Choose your plan</a>
-      <button class="nav-toggle" aria-label="Open menu">☰</button>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
     </div>
+
+    <!-- Mobile navigation (toggled by the hamburger) -->
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+      <a href="#how">How it Works</a>
+      <a href="#topics">Topics</a>
+      <a href="#benefits">Benefits</a>
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-orange" href="#pricing">Choose your plan</a>
+    </nav>
   </header>
 
   <!-- ============================ HERO ============================ -->
@@ -481,7 +544,7 @@
             <p class="sub">One Story.<br />One action.</p>
             <div class="phone-player">
               <span>⟲</span>
-              <span class="play">▶</span>
+              <span class="play" id="phonePlay" role="button" aria-label="Play preview">▶</span>
               <span>⟳</span>
             </div>
           </div>
@@ -557,15 +620,20 @@
 
       <div class="demo-card">
         <div class="demo-thumb" aria-hidden="true">🎧</div>
-        <div class="demo-play" role="button" aria-label="Play sample">▶</div>
+        <button class="demo-play" id="demoPlay" aria-label="Play sample">▶</button>
         <div class="demo-body">
           <div class="d-title">🔸 Demo: Eliminating Distractions</div>
           <div class="d-desc">How to silence the noise so you can do what matters most.</div>
-          <div class="waveform" aria-hidden="true"></div>
-          <div class="demo-meta">
-            <span>0:00 / 10:00</span>
-            <span class="rate">1.4x</span>
+          <div class="waveform" id="demoTrack" aria-label="Seek" role="slider" tabindex="0">
+            <div class="progress" id="demoProgress"></div>
           </div>
+          <div class="demo-meta">
+            <span id="demoTime">0:00 / 0:00</span>
+            <button class="rate" id="demoRate" aria-label="Playback speed">1x</button>
+          </div>
+          <!-- TODO: replace src with your real sample episode. Using a public sample for now. -->
+          <audio id="demoAudio" preload="metadata"
+                 src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
         </div>
       </div>
     </div>
@@ -687,6 +755,129 @@
       </div>
     </div>
   </footer>
+
+  <!-- ============================================================
+       Interactivity
+       ============================================================ -->
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- Mobile menu ---------- */
+      var toggle = document.getElementById("navToggle");
+      var menu = document.getElementById("mobileMenu");
+      if (toggle && menu) {
+        toggle.addEventListener("click", function () {
+          var open = menu.classList.toggle("open");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          toggle.textContent = open ? "✕" : "☰";
+        });
+        // close the menu after a link is tapped
+        menu.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", function () {
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.textContent = "☰";
+          });
+        });
+      }
+
+      /* ---------- Active nav link on scroll (scroll-spy) ---------- */
+      var navLinks = Array.prototype.slice.call(
+        document.querySelectorAll(".nav-links a")
+      );
+      var sections = navLinks
+        .map(function (a) { return document.querySelector(a.getAttribute("href")); })
+        .filter(Boolean);
+
+      if ("IntersectionObserver" in window && sections.length) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              var id = entry.target.id;
+              navLinks.forEach(function (a) {
+                a.classList.toggle("active", a.getAttribute("href") === "#" + id);
+              });
+            }
+          });
+        }, { rootMargin: "-45% 0px -50% 0px" });
+        sections.forEach(function (s) { spy.observe(s); });
+      }
+
+      /* ---------- Audio demo player ---------- */
+      var audio = document.getElementById("demoAudio");
+      var playBtn = document.getElementById("demoPlay");
+      var phoneBtn = document.getElementById("phonePlay");
+      var track = document.getElementById("demoTrack");
+      var progress = document.getElementById("demoProgress");
+      var timeEl = document.getElementById("demoTime");
+      var rateBtn = document.getElementById("demoRate");
+      var rates = [1, 1.25, 1.4, 1.75, 2];
+      var rateIdx = 0;
+
+      function fmt(secs) {
+        if (!isFinite(secs)) return "0:00";
+        var m = Math.floor(secs / 60);
+        var s = Math.floor(secs % 60);
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+      function setPlayIcons(playing) {
+        var icon = playing ? "⏸" : "▶";
+        if (playBtn) playBtn.textContent = icon;
+        if (phoneBtn) phoneBtn.textContent = icon;
+      }
+      function togglePlay() {
+        if (!audio) return;
+        if (audio.paused) { audio.play(); } else { audio.pause(); }
+      }
+
+      if (audio) {
+        if (playBtn) playBtn.addEventListener("click", togglePlay);
+        if (phoneBtn) phoneBtn.addEventListener("click", togglePlay);
+
+        audio.addEventListener("play", function () { setPlayIcons(true); });
+        audio.addEventListener("pause", function () { setPlayIcons(false); });
+        audio.addEventListener("ended", function () { setPlayIcons(false); });
+
+        audio.addEventListener("loadedmetadata", function () {
+          if (timeEl) timeEl.textContent = "0:00 / " + fmt(audio.duration);
+        });
+        audio.addEventListener("timeupdate", function () {
+          if (audio.duration) {
+            var pct = (audio.currentTime / audio.duration) * 100;
+            if (progress) progress.style.width = pct + "%";
+          }
+          if (timeEl) {
+            timeEl.textContent = fmt(audio.currentTime) + " / " + fmt(audio.duration);
+          }
+        });
+
+        // Click / keyboard to seek
+        if (track) {
+          track.addEventListener("click", function (e) {
+            var rect = track.getBoundingClientRect();
+            var ratio = (e.clientX - rect.left) / rect.width;
+            if (audio.duration) audio.currentTime = ratio * audio.duration;
+          });
+          track.addEventListener("keydown", function (e) {
+            if (!audio.duration) return;
+            if (e.key === "ArrowRight") audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+            if (e.key === "ArrowLeft") audio.currentTime = Math.max(0, audio.currentTime - 5);
+            if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePlay(); }
+          });
+        }
+
+        // Playback speed cycle
+        if (rateBtn) {
+          rateBtn.addEventListener("click", function () {
+            rateIdx = (rateIdx + 1) % rates.length;
+            audio.playbackRate = rates[rateIdx];
+            rateBtn.textContent = rates[rateIdx] + "x";
+          });
+        }
+      }
+    })();
+  </script>
 
 </body>
 </html>
