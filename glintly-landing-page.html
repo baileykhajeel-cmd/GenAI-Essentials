@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glintly — Stories that stick</title>
+  <style>
+    /* ============================================================
+       Design tokens
+       ============================================================ */
+    :root {
+      --navy: #0f2d55;
+      --navy-soft: #16335e;
+      --orange: #f5821f;
+      --orange-dark: #e2730f;
+      --blue: #2f6df0;
+      --blue-dark: #2256c9;
+      --text: #1b2a44;
+      --muted: #5b6b85;
+      --bg: #f7f9fc;
+      --card: #ffffff;
+      --border: #e2e8f4;
+      --tint: #fbf3e9;       /* warm section background */
+      --tint-blue: #eef4ff;  /* cool section background */
+      --radius: 14px;
+      --shadow: 0 12px 30px rgba(15, 45, 85, 0.08);
+      --shadow-sm: 0 4px 14px rgba(15, 45, 85, 0.06);
+      --maxw: 1080px;
+      --font: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* offset anchored sections so the sticky header doesn't cover them */
+    section[id], footer[id] { scroll-margin-top: 86px; }
+
+    .container {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* ============================================================
+       Buttons
+       ============================================================ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 22px;
+      border-radius: 10px;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-orange { background: var(--orange); color: #fff; }
+    .btn-orange:hover { background: var(--orange-dark); }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-blue:hover { background: var(--blue-dark); }
+    .btn-ghost { background: transparent; color: var(--navy); padding-left: 4px; }
+    .btn-block { width: 100%; justify-content: center; }
+
+    /* ============================================================
+       Header / Nav
+       ============================================================ */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(247, 249, 252, 0.92);
+      backdrop-filter: blur(8px);
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand .logo { width: 34px; height: 34px; }
+    .brand-text { line-height: 1.1; }
+    .brand-text .name {
+      font-size: 1.35rem; font-weight: 800; color: var(--blue);
+    }
+    .brand-text .tag { font-size: 0.7rem; color: var(--muted); }
+
+    .nav-links { display: flex; gap: 30px; }
+    .nav-links a {
+      color: var(--navy); font-weight: 600; font-size: 0.95rem;
+      position: relative; padding-bottom: 2px;
+    }
+    .nav-links a:hover { color: var(--orange); }
+    .nav-links a.active { color: var(--orange); }
+    .nav-links a.active::after {
+      content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
+      height: 2px; background: var(--orange); border-radius: 2px;
+    }
+
+    .nav-toggle {
+      display: none; background: none; border: none;
+      font-size: 1.6rem; cursor: pointer; color: var(--navy); line-height: 1;
+    }
+
+    /* Mobile slide-down menu */
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      padding: 14px 24px;
+      font-weight: 600;
+      color: var(--navy);
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-menu a:hover { background: var(--tint-blue); color: var(--orange); }
+    .mobile-menu .btn { margin: 14px 24px; }
+
+    /* ============================================================
+       Hero
+       ============================================================ */
+    .hero { padding: 40px 0 60px; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      line-height: 1.08;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+    }
+    .hero h1 .accent { color: var(--orange); }
+    .hero p.lead {
+      margin: 22px 0 28px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 440px;
+    }
+    .hero-cta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+
+    .trust-row {
+      display: flex;
+      gap: 30px;
+      margin-top: 34px;
+      flex-wrap: wrap;
+    }
+    .trust-item { display: flex; gap: 10px; align-items: flex-start; }
+    .trust-item .ti-icon {
+      font-size: 1.1rem; color: var(--orange); line-height: 1.4;
+    }
+    .trust-item strong { display: block; font-size: 0.85rem; color: var(--navy); }
+    .trust-item span { font-size: 0.78rem; color: var(--muted); }
+
+    /* Hero visual */
+    .hero-visual {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 380px;
+    }
+    .phone {
+      width: 230px;
+      background: #0b1f3a;
+      border-radius: 34px;
+      padding: 10px;
+      box-shadow: 0 24px 50px rgba(15, 45, 85, 0.28);
+      position: relative;
+      z-index: 2;
+    }
+    .phone-screen {
+      background: linear-gradient(180deg, #bfe0ff 0%, #e9f4ff 55%, #ffffff 100%);
+      border-radius: 26px;
+      overflow: hidden;
+      padding: 14px 14px 18px;
+      text-align: center;
+    }
+    .phone-statusbar {
+      display: flex; justify-content: space-between;
+      font-size: 0.7rem; color: var(--navy); font-weight: 600; margin-bottom: 6px;
+    }
+    .phone-title { font-size: 0.8rem; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    .phone-illustration {
+      width: 96px; height: 96px; border-radius: 50%;
+      background: #fff3; margin: 6px auto 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 3rem;
+    }
+    .phone-screen h3 { font-size: 1.1rem; color: var(--navy); margin-bottom: 2px; }
+    .phone-screen .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+    .phone-player {
+      display: flex; align-items: center; justify-content: center; gap: 18px; color: var(--navy);
+    }
+    .phone-player .play {
+      width: 46px; height: 46px; border-radius: 50%; background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    }
+    .clutter {
+      position: absolute;
+      left: 0; top: 30px;
+      width: 230px; height: 300px;
+      z-index: 1;
+      opacity: 0.9;
+    }
+    .clutter .card-bit {
+      position: absolute;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+      font-size: 0.6rem;
+      color: var(--muted);
+      padding: 8px;
+      width: 90px;
+    }
+    .clutter .b1 { top: 0; left: 10px; transform: rotate(-6deg); }
+    .clutter .b2 { top: 60px; left: 90px; transform: rotate(5deg); }
+    .clutter .b3 { top: 130px; left: 0; transform: rotate(-3deg); }
+    .clutter .b4 { top: 180px; left: 100px; transform: rotate(7deg); }
+
+    /* ============================================================
+       Section scaffolding
+       ============================================================ */
+    section { padding: 56px 0; }
+    .section-title {
+      text-align: center;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    /* "Why most content doesn't work" cards */
+    .tint-warm { background: var(--tint); }
+    .cards-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      gap: 14px;
+    }
+    .info-card .ic-icon { font-size: 1.5rem; }
+    .info-card h4 { font-size: 1rem; color: var(--navy); margin-bottom: 4px; }
+    .info-card p { font-size: 0.85rem; color: var(--muted); }
+
+    /* "Why Glintly is different" */
+    .features-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 26px;
+    }
+    .feature .f-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: #fff; box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 12px;
+    }
+    .feature h4 { font-size: 1rem; color: var(--navy); margin-bottom: 4px; }
+    .feature p { font-size: 0.85rem; color: var(--muted); }
+
+    /* Demo player */
+    .demo-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .demo-thumb {
+      width: 84px; height: 84px; border-radius: 12px; flex-shrink: 0;
+      background: linear-gradient(135deg, #2f6df0, #1f4fb0);
+      display: flex; align-items: center; justify-content: center; font-size: 2rem;
+    }
+    .demo-play {
+      width: 50px; height: 50px; border-radius: 50%; background: var(--navy); color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+      cursor: pointer; border: none; transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .demo-play:hover { transform: scale(1.06); background: var(--blue); }
+    .demo-body { flex: 1; min-width: 0; }
+    .demo-body .d-title { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+    .demo-body .d-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
+
+    /* Clickable progress track over a waveform backdrop */
+    .waveform {
+      position: relative;
+      height: 34px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: repeating-linear-gradient(90deg,
+        rgba(47,109,240,0.28) 0 2px, transparent 2px 5px);
+      overflow: hidden;
+    }
+    .waveform .progress {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+      background: repeating-linear-gradient(90deg,
+        var(--blue) 0 2px, transparent 2px 5px);
+    }
+    .demo-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); }
+    .demo-meta .rate {
+      color: var(--blue); font-weight: 700; cursor: pointer;
+      background: none; border: none; font-family: inherit; font-size: 0.75rem;
+    }
+    .demo-meta .rate:hover { text-decoration: underline; }
+
+    /* Phone player play button */
+    .phone-player .play { cursor: pointer; transition: transform 0.15s ease; }
+    .phone-player .play:hover { transform: scale(1.08); }
+
+    /* CTA banner */
+    .cta-banner {
+      background: var(--tint-blue);
+      border-radius: var(--radius);
+      padding: 28px 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .cta-banner h3 { font-size: 1.4rem; color: var(--navy); }
+    .cta-banner p { color: var(--muted); font-size: 0.9rem; }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 26px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .price-card {
+      position: relative;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 30px 26px;
+      box-shadow: var(--shadow-sm);
+    }
+    .price-card.featured { border-color: var(--blue); box-shadow: var(--shadow); }
+    .badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--blue); color: #fff; font-size: 0.7rem; font-weight: 700;
+      padding: 5px 14px; border-radius: 20px; letter-spacing: 0.5px;
+    }
+    .price-card h3 { text-align: center; color: var(--navy); font-size: 1.25rem; margin-bottom: 6px; }
+    .price { text-align: center; }
+    .price .amount { font-size: 2.6rem; font-weight: 800; color: var(--navy); }
+    .price .was { color: var(--muted); text-decoration: line-through; font-size: 1.1rem; margin-left: 6px; }
+    .price .note { display: block; color: var(--muted); font-size: 0.8rem; margin: 2px 0 18px; }
+    .feature-list { list-style: none; margin-bottom: 22px; }
+    .feature-list li {
+      font-size: 0.88rem; color: var(--text); padding: 7px 0;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .feature-list li::before { content: "✓"; color: var(--blue); font-weight: 800; }
+    .guarantee { text-align: center; font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
+
+    /* FAQ */
+    .faq-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 22px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 18px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--navy);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after { content: "⌄"; color: var(--muted); font-size: 1.1rem; }
+    .faq-item[open] summary::after { content: "⌃"; }
+    .faq-item p { padding: 0 18px 16px; font-size: 0.85rem; color: var(--muted); }
+
+    /* Footer trust strip */
+    .footer-strip { background: var(--tint-blue); }
+    .footer-strip .cards-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .footer-strip .trust-item .ti-icon { color: var(--blue); }
+
+    /* ============================================================
+       Responsive
+       ============================================================ */
+    @media (max-width: 900px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .hero-visual { order: -1; }
+      .features-4 { grid-template-columns: repeat(2, 1fr); }
+      .cards-3 { grid-template-columns: 1fr; }
+      .footer-strip .cards-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .nav-toggle { display: block; }
+      .hero h1 { font-size: 2.2rem; }
+      .pricing-grid, .faq-grid { grid-template-columns: 1fr; }
+      .features-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================ HEADER ============================ -->
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#">
+        <!-- Replace with the fox logo asset -->
+        <span class="logo" aria-hidden="true" style="font-size:30px;">🦊</span>
+        <span class="brand-text">
+          <span class="name">Glintly</span>
+          <span class="tag">Stories that stick.</span>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#how">How it Works</a>
+        <a href="#topics">Topics</a>
+        <a href="#benefits">Benefits</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <a class="btn btn-orange" href="#pricing">Choose your plan</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+    </div>
+
+    <!-- Mobile navigation (toggled by the hamburger) -->
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile">
+      <a href="#how">How it Works</a>
+      <a href="#topics">Topics</a>
+      <a href="#benefits">Benefits</a>
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+      <a class="btn btn-orange" href="#pricing">Choose your plan</a>
+    </nav>
+  </header>
+
+  <!-- ============================ HERO ============================ -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <h1>
+          You don't need<br />
+          more content.<br />
+          You need something<br />
+          <span class="accent">that sticks.</span>
+        </h1>
+        <p class="lead">
+          Most content gets consumed and forgotten. Glintly turns stories into
+          practical lessons you can use today.
+        </p>
+
+        <div class="hero-cta">
+          <a class="btn btn-orange" href="#pricing">Choose your plan</a>
+          <a class="btn btn-ghost" href="#how">Learn more →</a>
+        </div>
+
+        <div class="trust-row">
+          <div class="trust-item">
+            <span class="ti-icon">🔒</span>
+            <span><strong>One-time payment</strong><span>No subscription.</span></span>
+          </div>
+          <div class="trust-item">
+            <span class="ti-icon">⚡</span>
+            <span><strong>Instant access</strong><span>Start learning today.</span></span>
+          </div>
+          <div class="trust-item">
+            <span class="ti-icon">🛡️</span>
+            <span><strong>30-day guarantee</strong><span>Love it or get a refund.</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <!-- Background "content clutter" -->
+        <div class="clutter" aria-hidden="true">
+          <div class="card-bit b1">Long. Boring. Forgettable.</div>
+          <div class="card-bit b2">Another how-to article</div>
+          <div class="card-bit b3">▶ Download. Save for later.</div>
+          <div class="card-bit b4">✕ Never read.</div>
+        </div>
+
+        <!-- Phone mockup -->
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-statusbar"><span>9:41</span><span>▦ ▪ ▮</span></div>
+            <div class="phone-title">‹ Better Focus</div>
+            <div class="phone-illustration" aria-hidden="true">🧘</div>
+            <h3>Better Focus</h3>
+            <p class="sub">One Story.<br />One action.</p>
+            <div class="phone-player">
+              <span>⟲</span>
+              <span class="play" id="phonePlay" role="button" aria-label="Play preview">▶</span>
+              <span>⟳</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== WHY MOST CONTENT DOESN'T WORK ============== -->
+  <section id="how" class="tint-warm">
+    <div class="container">
+      <h2 class="section-title">Why most content doesn't work</h2>
+      <div class="cards-3">
+        <div class="info-card">
+          <span class="ic-icon">🕐</span>
+          <div>
+            <h4>Too much to read</h4>
+            <p>Long articles and videos take time you don't have.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">💡</span>
+          <div>
+            <h4>Hard to remember</h4>
+            <p>Information without stories is easy to forget.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="ic-icon">❓</span>
+          <div>
+            <h4>No clear action</h4>
+            <p>Most content doesn't tell you what to do next.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================ WHY GLINTLY IS DIFFERENT ================ -->
+  <section id="benefits" class="tint-warm" style="padding-top:0;">
+    <div class="container">
+      <h2 class="section-title">Why Glintly is different</h2>
+      <div class="features-4">
+        <div class="feature">
+          <div class="f-icon">🔷</div>
+          <h4>Story-first</h4>
+          <p>Stories help your brain remember and connect.</p>
+        </div>
+        <div class="feature">
+          <div class="f-icon">💡</div>
+          <h4>One idea</h4>
+          <p>We focus on one key takeaway per lesson.</p>
+        </div>
+        <div class="feature">
+          <div class="f-icon">🚀</div>
+          <h4>One action</h4>
+          <p>Every lesson ends with one practical step.</p>
+        </div>
+        <div class="feature">
+          <div class="f-icon">🔶</div>
+          <h4>Made to apply</h4>
+          <p>Built for real life, not just information.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== TRY BEFORE YOU COMMIT ==================== -->
+  <section id="topics">
+    <div class="container">
+      <h2 class="section-title">Try before you commit</h2>
+      <p class="section-sub">Listen to a sample episode and see the difference.</p>
+
+      <div class="demo-card">
+        <div class="demo-thumb" aria-hidden="true">🎧</div>
+        <button class="demo-play" id="demoPlay" aria-label="Play sample">▶</button>
+        <div class="demo-body">
+          <div class="d-title">🔸 Demo: Eliminating Distractions</div>
+          <div class="d-desc">How to silence the noise so you can do what matters most.</div>
+          <div class="waveform" id="demoTrack" aria-label="Seek" role="slider" tabindex="0">
+            <div class="progress" id="demoProgress"></div>
+          </div>
+          <div class="demo-meta">
+            <span id="demoTime">0:00 / 0:00</span>
+            <button class="rate" id="demoRate" aria-label="Playback speed">1x</button>
+          </div>
+          <!-- TODO: replace src with your real sample episode. Using a public sample for now. -->
+          <audio id="demoAudio" preload="metadata"
+                 src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CTA BANNER ==================== -->
+  <section style="padding-top:0;">
+    <div class="container">
+      <div class="cta-banner">
+        <div>
+          <h3>📚 Ready to get something that sticks?</h3>
+          <p>Choose your plan below and start learning today.</p>
+        </div>
+        <a class="btn btn-orange" href="#pricing">See pricing →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PRICING ==================== -->
+  <section id="pricing">
+    <div class="container">
+      <h2 class="section-title">Choose your plan</h2>
+      <p class="section-sub">One-time payment. Lifetime access.</p>
+
+      <div class="pricing-grid">
+        <!-- Featured -->
+        <div class="price-card featured">
+          <span class="badge">BEST VALUE</span>
+          <h3>Full Lifetime</h3>
+          <div class="price">
+            <span class="amount">$59</span><span class="was">$149</span>
+            <span class="note">One-time payment</span>
+          </div>
+          <ul class="feature-list">
+            <li>Everything in Launch Series</li>
+            <li>Every future series free forever</li>
+            <li>Early access to new features</li>
+            <li>Never pay again</li>
+          </ul>
+          <a class="btn btn-blue btn-block" href="#">Get Full Lifetime 🛡️</a>
+          <p class="guarantee">30-day money-back guarantee</p>
+        </div>
+
+        <!-- Standard -->
+        <div class="price-card">
+          <h3>Launch Series</h3>
+          <div class="price">
+            <span class="amount">$39</span>
+            <span class="note">One-time payment</span>
+          </div>
+          <ul class="feature-list">
+            <li>Social Skills Series</li>
+            <li>Better Focus Series</li>
+            <li>Wealth Building Series</li>
+            <li>Smart Learning Series</li>
+            <li>Early access to series</li>
+            <li>60+ episodes at launch</li>
+          </ul>
+          <a class="btn btn-blue btn-block" href="#">Get Launch Series</a>
+          <p class="guarantee">30-day money-back guarantee</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FAQ ==================== -->
+  <section id="faq" style="padding-top:0;">
+    <div class="container">
+      <h2 class="section-title">Frequently asked questions</h2>
+      <div class="faq-grid">
+        <details class="faq-item">
+          <summary>Is this a subscription?</summary>
+          <p>No. Glintly is a one-time payment that gives you lifetime access — no recurring charges.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What if I'm not satisfied?</summary>
+          <p>You're covered by our 30-day money-back guarantee. Love it or get a full refund.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Will I get new episodes?</summary>
+          <p>Yes. New episodes are added regularly, and Full Lifetime members get every future series free.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Can I listen offline?</summary>
+          <p>Yes. Download episodes to your device and listen anywhere, anytime.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How do I access the episodes?</summary>
+          <p>Once you purchase, you get instant access through the Glintly app and web player.</p>
+        </details>
+        <details class="faq-item">
+          <summary>Who is Glintly for?</summary>
+          <p>Anyone who wants practical lessons that actually stick — without endless articles and videos.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER TRUST STRIP ==================== -->
+  <footer class="footer-strip">
+    <div class="container" style="padding-top:34px;padding-bottom:34px;">
+      <div class="cards-4">
+        <div class="trust-item">
+          <span class="ti-icon">🛡️</span>
+          <span><strong>One-time payment</strong><span>Pay once, own it forever.</span></span>
+        </div>
+        <div class="trust-item">
+          <span class="ti-icon">🚀</span>
+          <span><strong>Instant access</strong><span>Start learning in seconds.</span></span>
+        </div>
+        <div class="trust-item">
+          <span class="ti-icon">🎁</span>
+          <span><strong>Early access</strong><span>Be the first to get new episodes and features.</span></span>
+        </div>
+        <div class="trust-item">
+          <span class="ti-icon">💛</span>
+          <span><strong>30-day guarantee</strong><span>Love it or get a full refund.</span></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       Interactivity
+       ============================================================ -->
+  <script>
+    (function () {
+      "use strict";
+
+      /* ---------- Mobile menu ---------- */
+      var toggle = document.getElementById("navToggle");
+      var menu = document.getElementById("mobileMenu");
+      if (toggle && menu) {
+        toggle.addEventListener("click", function () {
+          var open = menu.classList.toggle("open");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          toggle.textContent = open ? "✕" : "☰";
+        });
+        // close the menu after a link is tapped
+        menu.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", function () {
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.textContent = "☰";
+          });
+        });
+      }
+
+      /* ---------- Active nav link on scroll (scroll-spy) ---------- */
+      var navLinks = Array.prototype.slice.call(
+        document.querySelectorAll(".nav-links a")
+      );
+      var sections = navLinks
+        .map(function (a) { return document.querySelector(a.getAttribute("href")); })
+        .filter(Boolean);
+
+      if ("IntersectionObserver" in window && sections.length) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              var id = entry.target.id;
+              navLinks.forEach(function (a) {
+                a.classList.toggle("active", a.getAttribute("href") === "#" + id);
+              });
+            }
+          });
+        }, { rootMargin: "-45% 0px -50% 0px" });
+        sections.forEach(function (s) { spy.observe(s); });
+      }
+
+      /* ---------- Audio demo player ---------- */
+      var audio = document.getElementById("demoAudio");
+      var playBtn = document.getElementById("demoPlay");
+      var phoneBtn = document.getElementById("phonePlay");
+      var track = document.getElementById("demoTrack");
+      var progress = document.getElementById("demoProgress");
+      var timeEl = document.getElementById("demoTime");
+      var rateBtn = document.getElementById("demoRate");
+      var rates = [1, 1.25, 1.4, 1.75, 2];
+      var rateIdx = 0;
+
+      function fmt(secs) {
+        if (!isFinite(secs)) return "0:00";
+        var m = Math.floor(secs / 60);
+        var s = Math.floor(secs % 60);
+        return m + ":" + (s < 10 ? "0" : "") + s;
+      }
+      function setPlayIcons(playing) {
+        var icon = playing ? "⏸" : "▶";
+        if (playBtn) playBtn.textContent = icon;
+        if (phoneBtn) phoneBtn.textContent = icon;
+      }
+      function togglePlay() {
+        if (!audio) return;
+        if (audio.paused) { audio.play(); } else { audio.pause(); }
+      }
+
+      if (audio) {
+        if (playBtn) playBtn.addEventListener("click", togglePlay);
+        if (phoneBtn) phoneBtn.addEventListener("click", togglePlay);
+
+        audio.addEventListener("play", function () { setPlayIcons(true); });
+        audio.addEventListener("pause", function () { setPlayIcons(false); });
+        audio.addEventListener("ended", function () { setPlayIcons(false); });
+
+        audio.addEventListener("loadedmetadata", function () {
+          if (timeEl) timeEl.textContent = "0:00 / " + fmt(audio.duration);
+        });
+        audio.addEventListener("timeupdate", function () {
+          if (audio.duration) {
+            var pct = (audio.currentTime / audio.duration) * 100;
+            if (progress) progress.style.width = pct + "%";
+          }
+          if (timeEl) {
+            timeEl.textContent = fmt(audio.currentTime) + " / " + fmt(audio.duration);
+          }
+        });
+
+        // Click / keyboard to seek
+        if (track) {
+          track.addEventListener("click", function (e) {
+            var rect = track.getBoundingClientRect();
+            var ratio = (e.clientX - rect.left) / rect.width;
+            if (audio.duration) audio.currentTime = ratio * audio.duration;
+          });
+          track.addEventListener("keydown", function (e) {
+            if (!audio.duration) return;
+            if (e.key === "ArrowRight") audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+            if (e.key === "ArrowLeft") audio.currentTime = Math.max(0, audio.currentTime - 5);
+            if (e.key === " " || e.key === "Enter") { e.preventDefault(); togglePlay(); }
+          });
+        }
+
+        // Playback speed cycle
+        if (rateBtn) {
+          rateBtn.addEventListener("click", function () {
+            rateIdx = (rateIdx + 1) % rates.length;
+            audio.playbackRate = rates[rateIdx];
+            rateBtn.textContent = rates[rateIdx] + "x";
+          });
+        }
+      }
+    })();
+  </script>
+
+</body>
+</html>
